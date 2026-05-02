@@ -1,0 +1,39 @@
+# Fly.io blueprint — `flyctl launch --no-deploy` then `flyctl secrets set LLM_API_KEY=...` then `flyctl deploy`.
+app = "vera-bot-pro-bro"
+primary_region = "bom"   # Mumbai — closest region to India for sub-100ms latency
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+    method = "get"
+    path = "/v1/healthz"
+
+[env]
+  LLM_BASE_URL = "https://api.tokenrouter.com/v1"
+  LLM_MODEL_PRIMARY = "anthropic/claude-opus-4.7"
+  LLM_MODEL_FAST = "anthropic/claude-haiku-4.5"
+  LLM_TIMEOUT_SECONDS = "13"
+  TICK_TIME_BUDGET_SECONDS = "13"
+  REPLY_TIME_BUDGET_SECONDS = "13"
+  TICK_MAX_ACTIONS = "6"
+  LLM_MAX_PARALLEL = "4"
+  TEAM_NAME = "Pro Bro"
+  TEAM_MEMBERS = "Dhannu Ram Meena"
+  CONTACT_EMAIL = "dhannumeena281229111@gmail.com"
+  BOT_VERSION = "1.0.0"
+  PYTHONIOENCODING = "utf-8"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
