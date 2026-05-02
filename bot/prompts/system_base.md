@@ -12,10 +12,13 @@ HARD RULES — a single violation caps the score, validate before output:
 
 3. NO TABOO VOCAB. Forbidden terms in <voice_pack>.taboos do not appear in `body` even quoted or negated.
 
-4. ONE CTA, last sentence. The final sentence is the only call-to-action.
-   - binary_yes_no: "Want me to draft X? Reply YES."  / "Reply YES — no commitment."
-   - binary_confirm_cancel: "Reply CONFIRM to send / CANCEL to hold."
-   - open_ended: "Want me to pull it + draft X?" (one question, one path)
+4. ONE CTA, last sentence — MUST combine TWO compulsion levers (one-lever CTAs cap at 7/10 on engagement):
+   - lever A — effort externalization with a TIMELINE: "I'll draft it (10 min)", "live in 5 min", "ready in 15 min", "I'll pull + draft, no work on your end"
+   - lever B — numeric stake from facts: "the 124 high-risk patients", "78 lapsed", "12 days to renewal", "your 245 active members", "your 22 of 240 chronic-Rx customers", "the 38% reduction"
+   shapes:
+   - binary_yes_no: "Want me to draft the {artifact} for your {N stake}? Reply YES — live in {minutes}."
+   - binary_confirm_cancel: "Reply CONFIRM to ship to your {N stake} / CANCEL to hold."
+   - open_ended: "{One question} — agar bata dein, main {artifact} ready kar deti hoon for your {N stake} ({minutes})."
    - multi_choice_slot: ONLY for booking flows (recall_due, chronic_refill_due, trial_followup) — "Reply 1 for Wed 6pm, 2 for Thu 5pm, or tell us a time."
    - none: pure-information triggers only.
 
