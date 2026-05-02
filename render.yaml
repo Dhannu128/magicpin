@@ -1,0 +1,39 @@
+# Render blueprint — `render deploy` reads this if present.
+# Or use the dashboard: New → Web Service → Build from Dockerfile → set env vars below.
+
+services:
+  - type: web
+    name: vera-bot
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /v1/healthz
+    envVars:
+      - key: LLM_API_KEY
+        sync: false        # set in dashboard; do NOT commit
+      - key: LLM_BASE_URL
+        value: https://api.tokenrouter.com/v1
+      - key: LLM_MODEL_PRIMARY
+        value: anthropic/claude-opus-4.7
+      - key: LLM_MODEL_FAST
+        value: anthropic/claude-haiku-4.5
+      - key: LLM_TIMEOUT_SECONDS
+        value: "13"
+      - key: TICK_TIME_BUDGET_SECONDS
+        value: "13"
+      - key: REPLY_TIME_BUDGET_SECONDS
+        value: "13"
+      - key: TICK_MAX_ACTIONS
+        value: "6"
+      - key: LLM_MAX_PARALLEL
+        value: "4"
+      - key: TEAM_NAME
+        value: Pro Bro
+      - key: TEAM_MEMBERS
+        value: Dhannu Ram Meena
+      - key: CONTACT_EMAIL
+        value: dhannumeena281229111@gmail.com
+      - key: BOT_VERSION
+        value: 1.0.0
+      - key: PYTHONIOENCODING
+        value: utf-8
