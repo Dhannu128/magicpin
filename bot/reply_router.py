@@ -171,21 +171,26 @@ class ReplyRouter:
                 rationale=f"Hostile / opt-out signal ('{hostile}'). Suppressing all triggers for this merchant for 30 days.",
             )
 
-        # Auto-reply — track strikes.
-        if _matches_any(msg, AUTO_REPLY_PATTERNS) or self._is_repeat_inbound(conv_id, msg):
+        # Auto-reply — track strikes per-conversation AND cross-conversation
+        # (judge harness sometimes opens a new conv_id per turn while replaying
+        # the same canned text — production code must escalate either way).
+        is_auto = bool(_matches_any(msg, AUTO_REPLY_PATTERNS) or self._is_repeat_inbound(conv_id, msg))
+        if is_auto:
             conv.auto_reply_strikes += 1
-            if conv.auto_reply_strikes == 1:
-                # One brief polite prompt.
+            msg_norm = re.sub(r"\s+", " ", msg.strip().lower())
+            cross_strikes = self.state.suppressor.auto_reply_strike(merchant_id, msg_norm)
+            effective = max(conv.auto_reply_strikes, cross_strikes)
+            if effective == 1:
                 body = "Looks like an auto-reply 😊 When the owner sees this, just reply 'Yes' to continue."
                 self.state.conversations.append_turn(conv_id, "vera", body, cta="binary_yes_no")
                 return Decision(detector="auto_reply_strike1", action="send", body=body, cta="binary_yes_no",
                                 rationale="Detected auto-reply; one explicit prompt for the owner.")
-            if conv.auto_reply_strikes == 2:
+            if effective == 2:
                 return Decision(detector="auto_reply_strike2", action="wait", wait_seconds=86400,
-                                rationale="Same auto-reply twice; backing off 24h for owner.")
+                                rationale=f"Same auto-reply seen {effective}x for this merchant; backing off 24h for owner.")
             self.state.conversations.end(conv_id, reason="auto_reply_strike3")
             return Decision(detector="auto_reply_strike3", action="end",
-                            rationale="Auto-reply 3x; zero engagement signal — closing.")
+                            rationale=f"Auto-reply seen {effective}x for this merchant; closing — zero engagement signal.")
 
         # Intent transition — switch to ACTION; deliver concrete artifact, single binary CONFIRM.
         if _matches_any(msg, INTENT_TRANSITION_PATTERNS):

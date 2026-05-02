@@ -48,4 +48,5 @@ def client():
     state.conversations._convs.clear()
     state.suppressor._sent.clear()
     state.suppressor._merchant_cooldown.clear()
+    state.suppressor._merchant_auto_reply_strikes.clear()
     return TestClient(app)

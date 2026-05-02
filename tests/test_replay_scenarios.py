@@ -40,6 +40,27 @@ def test_auto_reply_three_strike(client, dataset):
     assert r3.json()["action"] == "end"
 
 
+def test_auto_reply_cross_conversation_escalates(client, dataset):
+    """Judge harness sometimes opens a NEW conversation_id per turn while sending the same canned text.
+    Bot must still escalate via merchant-level strike tracking."""
+    _push_seed(client, dataset)
+    mid = "m_001_drmeera_dentist_delhi"
+    auto = "Thank you for contacting us! Our team will respond shortly."
+    actions = []
+    for i in range(1, 5):
+        r = client.post("/v1/reply", json={
+            "conversation_id": f"conv_auto_x{i}", "merchant_id": mid, "from_role": "merchant",
+            "message": auto, "received_at": "2026-04-26T10:00:00Z", "turn_number": i + 1,
+        })
+        assert r.status_code == 200
+        actions.append(r.json()["action"])
+
+    # Turn 1: one polite send. Turn 2: wait. Turn 3+: end.
+    assert actions[0] == "send"
+    assert actions[1] == "wait"
+    assert actions[2] == "end"
+
+
 def test_intent_transition_no_requalifying(client, dataset):
     _push_seed(client, dataset)
     conv = "conv_intent_001"

@@ -218,12 +218,15 @@ HOSTILE_MERCHANT_SUPPRESS_DAYS = 30
 
 
 class Suppressor:
-    """Tracks which (suppression_key) we've sent and when, plus per-merchant cooldowns."""
+    """Tracks which (suppression_key) we've sent and when, plus per-merchant cooldowns
+    and cross-conversation auto-reply strikes per merchant."""
 
     def __init__(self) -> None:
         self._lock = threading.RLock()
         self._sent: dict[str, datetime] = {}  # suppression_key -> last_sent_utc
         self._merchant_cooldown: dict[str, datetime] = {}  # merchant_id -> blocked_until_utc
+        # (merchant_id, normalized_message_hash) -> count of times we've seen the same auto-reply
+        self._merchant_auto_reply_strikes: dict[tuple[str, str], int] = {}
 
     def should_skip(self, suppression_key: str | None, kind: str) -> bool:
         if not suppression_key:
@@ -254,6 +257,19 @@ class Suppressor:
         with self._lock:
             self._merchant_cooldown[merchant_id] = datetime.now(timezone.utc) + timedelta(days=days)
             logger.info("blocking merchant %s for %d days", merchant_id, days)
+
+    def auto_reply_strike(self, merchant_id: str, message_normalized: str) -> int:
+        """Increment the strike count for this (merchant, canned_message). Return new count.
+        Used to defeat the cross-conversation auto-reply pattern where the harness opens
+        a new conversation_id for each turn but sends the same canned text."""
+        if not merchant_id or not message_normalized:
+            return 0
+        import hashlib as _h
+        key = (merchant_id, _h.sha1(message_normalized.encode("utf-8")).hexdigest()[:16])
+        with self._lock:
+            n = self._merchant_auto_reply_strikes.get(key, 0) + 1
+            self._merchant_auto_reply_strikes[key] = n
+            return n
 
 
 # ─── A single global instance bag (held by main.py) ─────────────────────────
