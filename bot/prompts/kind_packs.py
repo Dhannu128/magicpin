@@ -40,12 +40,15 @@ CTA: binary_yes_no — "Want me to draft their WhatsApp note + the replacement-p
 """,
 
     "perf_spike": """\
-LEVERS: curiosity + celebration + social proof.
-ANCHOR (must use 3+): exact metric + delta_pct + the merchant's absolute number, peer benchmark from category.peer_stats (e.g., "peer median is 12 calls/30d"), and the likely_driver if payload has one.
-TIE-BACK: if likely_driver is in payload, name it as a hypothesis WITHOUT underscores ("looks like your kids yoga post is driving it").
-CTA: open_ended — ONE concrete question that helps the merchant replicate ("What changed this week — new post, event, word-of-mouth?"). Then offer to replicate across other posts.
+LEVERS: curiosity + celebration + social proof + numeric stake.
+ANCHOR (must use 4+):
+  - exact metric + delta_pct + the merchant's absolute number from facts.merchant.performance,
+  - peer benchmark from facts.merchant.derived (`peer_calls_30d`, `peer_avg_ctr_pct`, `calls_vs_peer_pct`) — say it explicitly (e.g. "you: 18 vs peer median 12 = +50% above"),
+  - likely_driver if payload has one (rephrased without underscores),
+  - the merchant's locality + name as the second-sentence anchor.
+CTA: open_ended — ONE concrete question that helps the merchant replicate ("What changed this week — new post, event, word-of-mouth?"). Then offer to replicate across other posts. CTA must combine TWO levers: effort externalization ("I'll replicate the pattern") + numeric stake ("across all your X posts / Y reviews").
 FORMAT SCAFFOLD:
-  "{Salutation}, quick one — your {metric} are {+pct%} this week ({absolute_now}, vs peer median {peer_value}). Likely driver: {hypothesis}. What changed in the last 7 days — {three concrete options}? Bata dijiye, main same pattern aapke other posts pe replicate kar deti hoon."
+  "{Salutation}, quick one — your {metric} are {+pct%} this week ({absolute_now}, vs peer median {peer_value} = +{pct_above_peer}% above). For {merchant_name} in {locality}, ye notable hai. Likely driver: {hypothesis}. What changed in the last 7 days — {three concrete options}? Agar bata dein, main same pattern aapke other posts pe replicate kar deti hoon (10 min)."
 """,
 
     "perf_dip": """\
@@ -147,10 +150,23 @@ CTA: binary_yes_no — "Want me to register you (free for IDA members) + add the
 
     "active_planning_intent": """\
 CRITICAL: the merchant has explicitly asked for the artifact. DO NOT re-qualify. DELIVER IT.
-LEVERS: complete-drafted-artifact + specificity + low-friction follow-on.
-ANCHOR: intent_topic + merchant_last_message — produce a structured draft (tiered pricing, program outline) that the merchant can paste into WhatsApp / send to corporates / publish as a GBP post.
-CTA: binary_yes_no — "Want me to draft the 3-line outreach WhatsApp to send to facilities managers / parents?"
+LEVERS: complete-drafted-artifact + specificity + low-friction follow-on + numeric stake.
+ANCHOR (must use 4+):
+  - intent_topic verbatim from payload + the merchant's exact last_message in payload as the trigger reference (1 brief callback sentence),
+  - the merchant's name + locality (always — "for Studio11 in Kapra", "for Zen Yoga Studio Mylapore"),
+  - a structured DRAFT artifact in the body — tiered pricing (3 tiers), schedule (days + time), age-band or audience, ₹ price per tier (it's OK to invent operator-grade tier prices for the draft IF you anchor the base price on an existing active_offer),
+  - one merchant-specific number from facts.merchant.performance OR customer_aggregate as social-proof for the draft ("your 95 active members", "your 4200 unique customers", "your 245 active members").
+CTA: binary_yes_no — "Want me to draft the 3-line outreach WhatsApp to send to facilities managers / parents? 10 min." Combines effort externalization + numeric stake.
 TRAP: if you ask another qualifying question instead of delivering, this is a -3 anti-pattern. Always deliver in this turn.
+FORMAT SCAFFOLD (kids yoga camp example):
+  "{Salutation}, here's the {topic} draft for {merchant_name} {locality} — you can edit:
+
+  *{Program name}* — {duration} (e.g. 4-week, May-Jun)
+  • Ages 6-9: Mon/Wed/Fri 5-6pm, ₹{price1} for 12 sessions
+  • Ages 10-13: Tue/Thu/Sat 5-6pm, ₹{price2} for 12 sessions
+  • Sibling pair: ₹{combo} (save ₹{savings})
+
+  Anchored on your {N active members / 95 active members / etc.} for word-of-mouth. Want me to draft the parent WhatsApp + a GBP post? 10 min to ship."
 """,
 
     "category_seasonal": """\
@@ -180,11 +196,17 @@ LANGUAGE: hi if customer.language_pref="hi". Use "ji" honorific (e.g., "Sharma j
     "trial_followup": """\
 SEND_AS: merchant_on_behalf — speak in the merchant's voice TO the parent (if customer.parent_name is set) or the customer.
 LEVERS: continuation + relationship warmth + specific next slot + concrete first-month price + low-friction confirm.
-ANCHOR (must use 4+): customer first_name OR parent address ("Hi Sumitra"), trial_date verbatim, child's first_name, next_session_options[0].label, an active offer with ₹ price, and a merchant identifier (name + locality).
+ANCHOR (must use 5+):
+  - parent salutation if customer.parent_name set ("Hi Sumitra") OR customer first_name,
+  - merchant_name + locality + owner_first_name as a self-introduction in sentence 1 ("Padma from Zen Yoga Studio Mylapore here"),
+  - trial_date verbatim,
+  - child's first_name,
+  - next_session_options[0].label exactly,
+  - an active offer with ₹ price for first-month / first-class.
 WARMTH: 1 sentence that names the trial activity and a small detail (e.g. "Karthik enjoyed the kids yoga session", "loved his Saturday morning energy"). Avoid sounding transactional.
-CTA: binary_yes_no or multi_choice_slot — "Reply YES to confirm {slot_label}, or tell us another time."
+CTA: binary_yes_no — "Reply YES to confirm {slot_label}, or tell us another time." Combines TWO levers: low-friction confirmation + numeric stake (the ₹499 first-month).
 FORMAT SCAFFOLD:
-  "Hi {address_to} — {merchant_name} {locality} here. {child_first_name}'s {trial_activity} on {trial_date} went really well, and {Saturday morning} suits him. We've held a spot in the next batch on {slot_label}. {Active offer with ₹ price} for first-month if you'd like to continue. Reply YES to confirm {slot_label_short}, or tell us another time."
+  "Hi {address_to} — {owner_first_name} from {merchant_name} {locality} here. {child_first_name}'s {trial_activity} on {trial_date} went really well, and {Saturday morning} seems to suit him. We've held a spot in the next batch on {slot_label}. {Active offer with ₹ price} covers the first month if you'd like to continue, no pressure. Reply YES to confirm {slot_label_short}, or tell us another time."
 """,
 
     "wedding_package_followup": """\
