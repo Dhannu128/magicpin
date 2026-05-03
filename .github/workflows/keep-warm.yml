@@ -1,0 +1,40 @@
+name: Keep Vera bot warm
+
+# Pings the live Render bot every 5 minutes so it never spins down
+# during the magicpin AI Challenge test window.
+#
+# Render free tier sleeps after 15 min of no traffic; first request after
+# sleep takes 30-50s and would timeout the judge harness's /v1/context
+# warmup burst (255 contexts in <60s). This workflow keeps the container
+# permanently warm at zero cost on a public GitHub repo.
+
+on:
+  schedule:
+    # Every 5 minutes. GitHub may delay cron by a few minutes under load,
+    # but worst-case lag (~8 min) is still under Render's 15-min spin-down threshold.
+    - cron: "*/5 * * * *"
+  workflow_dispatch:           # Allow manual trigger from the Actions tab.
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Ping /v1/healthz with 60s warmup retry
+        run: |
+          set -uo pipefail
+          URL="https://vera-bot-8reg.onrender.com/v1/healthz"
+          # 6 attempts × 10s sleep = up to 60s for cold-start recovery if Render is slow.
+          for i in 1 2 3 4 5 6; do
+            HTTP=$(curl -s -o /tmp/r.json -w "%{http_code}" --max-time 50 "$URL" || echo "000")
+            if [ "$HTTP" = "200" ]; then
+              echo "OK ($HTTP) on attempt $i"
+              cat /tmp/r.json
+              exit 0
+            fi
+            echo "attempt $i: HTTP=$HTTP, retrying in 10s..."
+            sleep 10
+          done
+          echo "FAILED — bot unreachable after 6 attempts"
+          cat /tmp/r.json 2>/dev/null || true
+          exit 1
