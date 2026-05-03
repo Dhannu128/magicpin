@@ -160,6 +160,27 @@ def _derive_merchant_facts(merchant: dict, category: dict, trigger: dict, custom
     if isinstance(upl, (int, float)) and isinstance(views, (int, float)):
         out["estimated_views_post_verification"] = int(round(views * (1 + upl)))
         out["estimated_uplift_pct"] = round(upl * 100)
+    # Merchant-level cohort derivations.
+    cust_agg = merchant.get("customer_aggregate") or {}
+    total_unique = cust_agg.get("total_unique_ytd") or cust_agg.get("total_active_members")
+    lapsed = cust_agg.get("lapsed_180d_plus") or cust_agg.get("lapsed_90d_plus")
+    if isinstance(total_unique, (int, float)) and isinstance(lapsed, (int, float)) and total_unique > 0:
+        out["lapsed_pct_of_total"] = round(lapsed / total_unique * 100)
+    # Retention gap vs peer benchmark.
+    own_retention = cust_agg.get("retention_6mo_pct") or cust_agg.get("retention_3mo_pct")
+    peer_retention = ps.get("retention_6mo_pct")
+    if isinstance(own_retention, (int, float)) and isinstance(peer_retention, (int, float)):
+        out["retention_vs_peer_pct_pts"] = round((own_retention - peer_retention) * 100)
+    # Subscription value framing for renewal_due triggers.
+    sub = merchant.get("subscription") or {}
+    days_remaining = sub.get("days_remaining")
+    if isinstance(days_remaining, (int, float)):
+        out["renewal_in_days"] = int(days_remaining)
+    renewal_amount = (trigger.get("payload") or {}).get("renewal_amount")
+    leads_30d = perf.get("leads")
+    if isinstance(renewal_amount, (int, float)) and isinstance(leads_30d, (int, float)) and leads_30d > 0:
+        # Yearly cost per lead, useful framing for renewal_due
+        out["renewal_cost_per_lead"] = round(renewal_amount / (leads_30d * 12))
     # Customer derivations.
     if customer:
         rel = customer.get("relationship") or {}
@@ -167,6 +188,11 @@ def _derive_merchant_facts(merchant: dict, category: dict, trigger: dict, custom
         first_visit = rel.get("first_visit")
         if first_visit and last_visit:
             out["months_active"] = _months_between(first_visit, last_visit)
+        ltv = rel.get("lifetime_value")
+        visits = rel.get("visits_total")
+        if isinstance(ltv, (int, float)) and isinstance(visits, (int, float)) and visits > 0:
+            out["customer_avg_spend_per_visit"] = round(ltv / visits)
+        out["customer_lifetime_value"] = ltv if isinstance(ltv, (int, float)) else None
     return out
 
 
