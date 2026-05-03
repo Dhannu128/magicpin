@@ -41,14 +41,16 @@ CTA: binary_yes_no — "Want me to draft their WhatsApp note + the replacement-p
 
     "perf_spike": """\
 LEVERS: curiosity + celebration + social proof + numeric stake.
+VOICE FOR GYM CATEGORY: this is a coach-to-operator celebration. Lead with the WIN, not the data dump. "You're cooking" → then the number → then the curiosity prompt. Avoid clinical/financial framings.
 ANCHOR (must use 4+):
-  - exact metric + delta_pct + the merchant's absolute number from facts.merchant.performance,
+  - exact metric + delta_pct + merchant's absolute number from facts.merchant.performance,
   - peer benchmark from facts.merchant.derived (`peer_calls_30d`, `peer_avg_ctr_pct`, `calls_vs_peer_pct`) — say it explicitly (e.g. "you: 18 vs peer median 12 = +50% above"),
   - likely_driver if payload has one (rephrased without underscores),
-  - the merchant's locality + name as the second-sentence anchor.
-CTA: open_ended — ONE concrete question that helps the merchant replicate ("What changed this week — new post, event, word-of-mouth?"). Then offer to replicate across other posts. CTA must combine TWO levers: effort externalization ("I'll replicate the pattern") + numeric stake ("across all your X posts / Y reviews").
-FORMAT SCAFFOLD:
-  "{Salutation}, quick one — your {metric} are {+pct%} this week ({absolute_now}, vs peer median {peer_value} = +{pct_above_peer}% above). For {merchant_name} in {locality}, ye notable hai. Likely driver: {hypothesis}. What changed in the last 7 days — {three concrete options}? Agar bata dein, main same pattern aapke other posts pe replicate kar deti hoon (10 min)."
+  - merchant's locality + name as the second-sentence anchor.
+ANTI-PATTERN: do NOT just blurt the % in sentence 1. Wrap it in operator-celebration framing first ("ye solid signal hai", "really nice momentum", "your weekday slot is filling up"). Bare-number openings score lower on category fit.
+CTA: open_ended — ONE concrete question that helps the merchant replicate ("What changed this week — new post, event, word-of-mouth?"). Then offer to replicate across other posts.
+FORMAT SCAFFOLD (gym example):
+  "Hi {first_name}, ye solid momentum hai — calls {+pct%} this week ({absolute_now}, peer median {peer_value} = +{pct_above_peer}% above). For {merchant_name} in {locality}, especially with your {member_count} active members, that's a real signal. Likely driver: {hypothesis_natural_english}. What changed in the last 7 days — naya post, koi event, ya word-of-mouth from a class? Bata dein, main same pattern aapke other posts pe replicate kar deti hoon (10 min)."
 """,
 
     "perf_dip": """\
@@ -195,18 +197,30 @@ LANGUAGE: hi if customer.language_pref="hi". Use "ji" honorific (e.g., "Sharma j
 
     "trial_followup": """\
 SEND_AS: merchant_on_behalf — speak in the merchant's voice TO the parent (if customer.parent_name is set) or the customer.
+
+CRITICAL ADDRESSING — re-read this twice before composing:
+  - Open with `<facts>.customer.salutation` (e.g. "Hi Sumitra") — this is the PARENT.
+  - The merchant's owner_first_name (e.g. "Padma") is the GYM OWNER who is sending this message THROUGH us — they are the SIGNATURE, not the addressee.
+  - ANTI-PATTERN that costs 4+ points: opening "Hi Padma" or "Hi {owner_first_name}". Padma is NOT the recipient; Sumitra is. If you write "Hi Padma" you are sending the message TO the gym owner, which makes no sense for a trial follow-up to a parent.
+  - Sentence 1 template: "Hi {customer.address_to} — {owner_first_name} from {merchant.name} {locality} here, hope {child_first_name} enjoyed the trial on {trial_date}!"
+  - Note "Hi {customer.address_to}" first; "{owner_first_name} from {merchant.name}" is the SELF-INTRODUCTION (signature), not the salutation.
+
 LEVERS: continuation + relationship warmth + specific next slot + concrete first-month price + low-friction confirm.
+
 ANCHOR (must use 5+):
-  - parent salutation if customer.parent_name set ("Hi Sumitra") OR customer first_name,
-  - merchant_name + locality + owner_first_name as a self-introduction in sentence 1 ("Padma from Zen Yoga Studio Mylapore here"),
+  - parent salutation from customer.salutation OR customer first_name,
+  - merchant_name + locality + owner_first_name as a self-introduction in sentence 1,
   - trial_date verbatim,
   - child's first_name,
   - next_session_options[0].label exactly,
   - an active offer with ₹ price for first-month / first-class.
-WARMTH: 1 sentence that names the trial activity and a small detail (e.g. "Karthik enjoyed the kids yoga session", "loved his Saturday morning energy"). Avoid sounding transactional.
-CTA: binary_yes_no — "Reply YES to confirm {slot_label}, or tell us another time." Combines TWO levers: low-friction confirmation + numeric stake (the ₹499 first-month).
-FORMAT SCAFFOLD:
-  "Hi {address_to} — {owner_first_name} from {merchant_name} {locality} here. {child_first_name}'s {trial_activity} on {trial_date} went really well, and {Saturday morning} seems to suit him. We've held a spot in the next batch on {slot_label}. {Active offer with ₹ price} covers the first month if you'd like to continue, no pressure. Reply YES to confirm {slot_label_short}, or tell us another time."
+
+WARMTH: 1 sentence that names the trial activity and a small detail (e.g. "loved his Saturday morning energy"). Avoid sounding transactional.
+
+CTA: binary_yes_no — "Reply YES to confirm {slot_label}, or tell us another time."
+
+FORMAT SCAFFOLD (do NOT deviate from this opener):
+  "Hi {customer.address_to} — {owner_first_name} from {merchant.name} {locality} here. Hope {child_first_name} enjoyed his/her {trial_activity} on {trial_date}! We've held a spot in the next batch on {slot_label}. {Active offer with ₹ price} covers the first month if you'd like to continue, no pressure. Reply YES to confirm {slot_label_short}, or tell us another time."
 """,
 
     "wedding_package_followup": """\
