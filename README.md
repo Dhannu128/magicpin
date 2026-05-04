@@ -1,7 +1,7 @@
 # Vera — magicpin AI Challenge submission
 
 **Team:** Pro Bro &nbsp; · &nbsp; **Author:** Dhannu Ram Meena &nbsp; · &nbsp; **Contact:** dhannumeena281229111@gmail.com
-**Model:** `anthropic/claude-opus-4.7` (primary) · `anthropic/claude-haiku-4.5` (fast fallback) — both via TokenRouter (OpenAI-compatible).
+**Model:** `anthropic/claude-haiku-4.5` (via TokenRouter — OpenAI-compatible). Pipeline is model-agnostic; the deterministic validator + per-kind fallback templates absorb most of the quality delta vs. larger models.
 
 ## Approach
 
@@ -11,7 +11,7 @@ A FastAPI bot that exposes the 5 challenge endpoints (`/v1/healthz`, `/v1/metada
 
 1. **Build a structured `facts` pack** from the 4 contexts (CategoryContext + MerchantContext + TriggerContext + optional CustomerContext) — only verifiable values: numbers, dates, source citations, active offers, signals, peer-stats, customer aggregates. *No* text not derivable from those four objects.
 2. **Pick a voice pack** (one per category — `dentists`, `salons`, `restaurants`, `gyms`, `pharmacies`) and a **kind pack** (one per trigger.kind — `research_digest`, `recall_due`, `ipl_match_today`, `supply_alert`, `seasonal_perf_dip`, `active_planning_intent`, `intent_handoff`, …). The kind pack tells the LLM *which compulsion levers to lead with*.
-3. **Call Claude Opus 4.7** with `temperature=0`, `top_p=1` (deterministic), strict JSON output: `{body, cta_kind, rationale}`.
+3. **Call Claude Haiku 4.5** with `temperature=0`, `top_p=1` (deterministic), strict JSON output: `{body, cta_kind, rationale}`.
 4. **Run the post-LLM validator** against the body:
    - no URL (Meta would reject; -3)
    - no taboo vocab (per CategoryContext.voice.vocab_taboo)
@@ -20,7 +20,7 @@ A FastAPI bot that exposes the 5 challenge endpoints (`/v1/healthz`, `/v1/metada
    - owner first-name salutation present (or customer name for customer-facing)
    - language preference honored (hi-en mix → Hindi-English mix detected)
    - not byte-identical to a prior body in the conversation
-5. **Repair pass** if validation fails: re-prompt Opus once with the failure reasons.
+5. **Repair pass** if validation fails: re-prompt the model once with the failure reasons.
 6. **Deterministic per-kind fallback template** if the LLM still fails — keeps us above floor under any failure mode.
 
 **Reply router** runs detectors in priority order: `hostile → end (+ 30-day merchant suppression)` · `auto-reply (3-strike: prompt-once → wait-24h → end)` · `intent-transition → switch to ACTION mode (deliver concrete artifact + binary CONFIRM, NEVER re-qualify)` · `curveball → polite decline + redirect to original trigger` · `wait signal → wait 1h` · `engaged → honor + advance one step`. Mid-stream context updates always honored — every reply re-reads the live context store.
@@ -57,7 +57,7 @@ uvicorn bot.main:app --host 0.0.0.0 --port 8080
 #   BOT_URL = "http://localhost:8080"
 #   LLM_PROVIDER = "openai"   (TokenRouter uses OpenAI-compatible shape)
 #   LLM_API_KEY = "<your TokenRouter key>"
-#   LLM_MODEL = "anthropic/claude-opus-4.7"
+#   LLM_MODEL = "anthropic/claude-haiku-4.5"
 # Edit the OpenAIProvider URL inside judge_simulator.py to https://api.tokenrouter.com/v1
 # (or use ANTHROPIC_PROVIDER directly if you have an Anthropic key.)
 python judge_simulator.py
