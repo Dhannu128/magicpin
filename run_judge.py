@@ -71,7 +71,7 @@ def main():
     js.BOT_URL = os.environ.get("BOT_URL", "http://localhost:8080")
     js.LLM_PROVIDER = os.environ.get("LLM_PROVIDER", "openai")  # routed via TokenRouter
     js.LLM_API_KEY = os.environ.get("LLM_API_KEY", "")
-    js.LLM_MODEL = os.environ.get("JUDGE_MODEL", "anthropic/claude-haiku-4.5")
+    js.LLM_MODEL = os.environ.get("JUDGE_MODEL", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free")
     js.TEST_SCENARIO = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("TEST_SCENARIO", "all")
 
     if not js.LLM_API_KEY:

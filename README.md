@@ -1,7 +1,7 @@
 # Vera — magicpin AI Challenge submission
 
 **Team:** Pro Bro &nbsp; · &nbsp; **Author:** Dhannu Ram Meena &nbsp; · &nbsp; **Contact:** dhannumeena281229111@gmail.com
-**Model:** `anthropic/claude-haiku-4.5` (via TokenRouter — OpenAI-compatible). Pipeline is model-agnostic; the deterministic validator + per-kind fallback templates absorb most of the quality delta vs. larger models.
+**Model:** `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` (primary) · `anthropic/claude-haiku-4.5` (safety-net fallback) — both via TokenRouter (OpenAI-compatible). Pipeline is model-agnostic; the deterministic validator + per-kind fallback templates absorb most of the quality delta vs. larger models.
 
 ## Approach
 
@@ -11,7 +11,7 @@ A FastAPI bot that exposes the 5 challenge endpoints (`/v1/healthz`, `/v1/metada
 
 1. **Build a structured `facts` pack** from the 4 contexts (CategoryContext + MerchantContext + TriggerContext + optional CustomerContext) — only verifiable values: numbers, dates, source citations, active offers, signals, peer-stats, customer aggregates. *No* text not derivable from those four objects.
 2. **Pick a voice pack** (one per category — `dentists`, `salons`, `restaurants`, `gyms`, `pharmacies`) and a **kind pack** (one per trigger.kind — `research_digest`, `recall_due`, `ipl_match_today`, `supply_alert`, `seasonal_perf_dip`, `active_planning_intent`, `intent_handoff`, …). The kind pack tells the LLM *which compulsion levers to lead with*.
-3. **Call Claude Haiku 4.5** with `temperature=0`, `top_p=1` (deterministic), strict JSON output: `{body, cta_kind, rationale}`.
+3. **Call the primary model** with `temperature=0`, `top_p=1` (deterministic), strict JSON output: `{body, cta_kind, rationale}`.
 4. **Run the post-LLM validator** against the body:
    - no URL (Meta would reject; -3)
    - no taboo vocab (per CategoryContext.voice.vocab_taboo)
@@ -57,7 +57,7 @@ uvicorn bot.main:app --host 0.0.0.0 --port 8080
 #   BOT_URL = "http://localhost:8080"
 #   LLM_PROVIDER = "openai"   (TokenRouter uses OpenAI-compatible shape)
 #   LLM_API_KEY = "<your TokenRouter key>"
-#   LLM_MODEL = "anthropic/claude-haiku-4.5"
+#   LLM_MODEL = "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
 # Edit the OpenAIProvider URL inside judge_simulator.py to https://api.tokenrouter.com/v1
 # (or use ANTHROPIC_PROVIDER directly if you have an Anthropic key.)
 python judge_simulator.py

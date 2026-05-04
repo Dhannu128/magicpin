@@ -14,7 +14,7 @@ services:
       - key: LLM_BASE_URL
         value: https://api.tokenrouter.com/v1
       - key: LLM_MODEL_PRIMARY
-        value: anthropic/claude-haiku-4.5
+        value: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free
       - key: LLM_MODEL_FAST
         value: anthropic/claude-haiku-4.5
       - key: LLM_TIMEOUT_SECONDS
