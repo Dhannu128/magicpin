@@ -24,7 +24,7 @@ class LLM:
     ):
         self.api_key = api_key or os.getenv("LLM_API_KEY", "")
         self.base_url = base_url or os.getenv("LLM_BASE_URL", "https://api.tokenrouter.com/v1")
-        self.primary = primary_model or os.getenv("LLM_MODEL_PRIMARY", "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free")
+        self.primary = primary_model or os.getenv("LLM_MODEL_PRIMARY", "anthropic/claude-haiku-4.5")
         self.fast = fast_model or os.getenv("LLM_MODEL_FAST", "anthropic/claude-haiku-4.5")
         self.timeout = float(timeout if timeout is not None else os.getenv("LLM_TIMEOUT_SECONDS", "20"))
 
